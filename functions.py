@@ -1,8 +1,9 @@
 import pandas as pd
 
 
-# Load anime dataframe
-
+# This Function generate unique genres and add to dataframe and assing 1 with corresponding genres
+# input: dataframe from anime.csv
+# output: dataframe with onehots encodings
 def getOneHot(onehot_df):
     # Get unique genres
     unique_genres = sorted(set(g for genres in onehot_df['genre'].fillna('') for g in genres.split(',')))
@@ -16,7 +17,9 @@ def getOneHot(onehot_df):
 
     return onehot_df
 
-
+# This function converts dataframe to list of lists
+# input: dataframe with one hot encodings
+# output: listoflists of one-hot encoding
 def csvToVector(dataframe):
     list_of_lists = [[row[col] for col in dataframe.loc[:, 'Action':'Yaoi'].columns] for _, row in dataframe.iterrows()]
     result_df = pd.DataFrame(list_of_lists, columns=dataframe.loc[:, 'Action':'Yaoi'].columns)
@@ -24,6 +27,9 @@ def csvToVector(dataframe):
     return result_list
 
 
+# This Function multiplies one hot with rating scores then returns a matrix with that scores instead of 1s
+# input: dataframe, dataframe
+# output: dataframe
 def multiByRating(dataframe, oneHotVector):
     ratings = dataframe['rating'].fillna(6.5)
     result_df = oneHotVector.mul(ratings, axis=0)
