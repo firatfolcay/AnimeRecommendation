@@ -3,18 +3,18 @@ import pandas as pd
 
 # Load anime dataframe
 
-def getOneHot(animes_df):
+def getOneHot(onehot_df):
     # Get unique genres
-    unique_genres = sorted(set(g for genres in animes_df['genre'].fillna('') for g in genres.split(',')))
+    unique_genres = sorted(set(g for genres in onehot_df['genre'].fillna('') for g in genres.split(',')))
 
     # One-hot encode genres
     for value in unique_genres:
-        animes_df[value] = animes_df['genre'].str.contains(value, case=False).fillna(False).astype(int)
+        onehot_df[value] = onehot_df['genre'].str.contains(value, case=False).fillna(False).astype(int)
 
     # Drop the original genre column
-    animes_df = animes_df.drop('genre', axis=1)
+    onehot_df = onehot_df.drop('genre', axis=1)
 
-    return animes_df
+    return onehot_df
 
 
 def csvToVector(dataframe):
@@ -23,10 +23,12 @@ def csvToVector(dataframe):
     result_list = multiByRating(dataframe, result_df)
     return result_list
 
+
 def multiByRating(dataframe, oneHotVector):
     ratings = dataframe['rating'].fillna(6.5)
     result_df = oneHotVector.mul(ratings, axis=0)
     return result_df.values.tolist()
+
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
