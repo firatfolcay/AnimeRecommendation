@@ -1,6 +1,14 @@
-import pandas as pd
+# -*- coding: utf-8 -*-
+"""
+Created on Sat May 20 22:54:42 2023
 
-class AnimeEncoder:
+@author: firat
+"""
+
+import pandas as pd
+import numpy as np
+import random
+class GenreBased:
     def __init__(self):
         self.genreArray = []
 
@@ -37,3 +45,57 @@ class AnimeEncoder:
     def getIndexDict(self, dataframe):
         self.genreArray = [genre for genre in dataframe.loc[:, 'Action':'Yaoi'].columns]
         return self.genreArray
+    
+class UserBased:
+    def __init__(self):
+        self.userList= []
+        self.userIndex= []
+    #This Functions creates an array that contains all user indexes
+    #input: User data frame
+    #output: An array that contains all user indexes
+    def getUserArray(self, user_df):
+        self.userList= user_df['user_id'].unique()
+        
+        return self.userList
+    
+    
+    def getUserIndex(self, user_df,animeList):
+        self.userIndex=[0]*(len(self.userList))
+        for i ,row in user_df.iterrows():
+            
+            if row['anime_id'] in animeList:
+                
+                if row['rating'] == -1:
+                    
+                    self.userIndex[row['user_id']] +=  5
+                else: 
+                    
+                    self.userIndex[row['user_id']] += row[2]
+                    
+        
+        return self.userIndex
+    
+    
+    
+    def findBestUserID(self):
+        bestUserID = self.userIndex.index(max(self.userIndex))
+        return bestUserID
+    
+    
+    def recommendByID(self, userId, user_df, count=5):
+        AnimeDict = {}
+        for user in user_df.iterrows():
+            if user['user_id'] == userId:
+                if  user['rating'] == -1:
+                    user['rating'] = 5
+                AnimeDict[user['anime_id']] = user['rating']
+        
+        total_rating = sum(AnimeDict.values())
+        probabilities = {key: value / total_rating for key, value in user_df.items()}
+        
+        #selected_id = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
+        selected_ids = random.choices(list(probabilities.keys()), list(probabilities.values()), k=count)
+        
+        return selected_ids
+
+ 
