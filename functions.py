@@ -34,8 +34,9 @@ if __name__ == "__main__":
     genreArray = encoder.getIndexDict(animes_df)
 
     ans = calcGenreBased([[[43], [62], [131], [327], [10991]]], npOneHot, 5)  # Örnek
-    print(animes_df.loc[ans, 'name'])
-    StocasticReturns.calculate_combined_value(animes_df, ans, 0.7, 0.3)
+
+    choseList= StocasticReturns.calculate_combined_stochastic(animes_df, ans, 0.7, 0.3)
+    print(choseList)
     # print(csvToVector(animes_df))
     # Save the encoded dataframe to a CSV file
     animes_df.to_csv('anime_encoded.csv', index=False)
