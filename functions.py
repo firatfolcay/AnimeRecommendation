@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     ans = calcGenreBased([[[43], [62], [131], [327], [10991]]], npOneHot, 5)  # Örnek
 
-    choseList= StocasticReturns.calculate_combined_stochastic(animes_df, ans, 0.7, 0.3)
+    choseList= StocasticReturns.calculate_combined_stochastic(animes_df, ans, 0.3, 0.7)
     print(choseList)
     # print(csvToVector(animes_df))
     # Save the encoded dataframe to a CSV file
