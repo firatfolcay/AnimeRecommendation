@@ -6,8 +6,11 @@ Created on Sat May 20 22:54:42 2023
 """
 
 import pandas as pd
-import numpy as np
 import random
+import numpy as np
+from scipy.spatial.distance import cdist
+
+#Anime Encoder for Genre Based
 class GenreBased:
     def __init__(self):
         self.genreArray = []
@@ -46,6 +49,18 @@ class GenreBased:
         self.genreArray = [genre for genre in dataframe.loc[:, 'Action':'Yaoi'].columns]
         return self.genreArray
     
+    # This Function applies genre based method input: npUserAnime is array list of indexes, npOneHotMatrix is our onehot
+    # list with scores, topXAnime is how much anime will be shown output: recommended anime indices
+    def calcGenreBased(self, npUserAnime, npOneHotMatrix, topXAnime):
+        mean_point = np.mean(npOneHotMatrix[npUserAnime].reshape(len(npUserAnime[0]), 40), axis=0)
+        print("mean point:" + "\n" + str(mean_point))
+        distances = cdist(npOneHotMatrix, np.array([mean_point]), metric='euclidean')
+        closest_point_indices = np.argsort(distances, axis=0)[:topXAnime, 0]
+        # closest_points = npOneHotMatrix[closest_point_indices]
+        return closest_point_indices
+
+    
+#Anime encoder for User Based
 class UserBased:
     def __init__(self):
         self.userList= []
@@ -60,7 +75,7 @@ class UserBased:
     
     
     def getUserIndex(self, user_df,animeList):
-        self.userIndex=[0]*(len(self.userList))
+        self.userIndex=[0]*(len(self.userList)+2)
         for i ,row in user_df.iterrows():
             
             if row['anime_id'] in animeList:
@@ -84,18 +99,37 @@ class UserBased:
     
     def recommendByID(self, userId, user_df, count=5):
         AnimeDict = {}
-        for user in user_df.iterrows():
+        for _, user in user_df.iterrows():
             if user['user_id'] == userId:
-                if  user['rating'] == -1:
+                if user['rating'] == -1:
                     user['rating'] = 5
                 AnimeDict[user['anime_id']] = user['rating']
-        
+    
         total_rating = sum(AnimeDict.values())
-        probabilities = {key: value / total_rating for key, value in user_df.items()}
-        
-        #selected_id = random.choices(list(probabilities.keys()), list(probabilities.values()))[0]
+        probabilities = {key: value / total_rating for key, value in AnimeDict.items()}
+    
         selected_ids = random.choices(list(probabilities.keys()), list(probabilities.values()), k=count)
-        
+    
         return selected_ids
+    
 
- 
+
+
+if __name__ == "__main__":
+    animes_df = pd.read_csv("anime.csv")
+    animeList=['Pumpkin Scissors','Ginga Eiyuu Densetsu','Shakugan no Shana','So Ra No Wo To','Gosick','Kingdom','Arslan Senki','Grisaia no Rakuen', 'Youjo Senki']
+    animeListIndexes=list(animes_df.loc[animes_df['name'].isin(animeList)]['anime_id'])      
+    animeList=[7 ,266 ,278 ,435,986,1300,2495,3286,11107]
+    users_df = pd.read_csv("rating.csv")
+    userBased=UserBased()
+    c=userBased.getUserArray(users_df)
+    d=userBased.getUserIndex(users_df, animeListIndexes)
+    userId=userBased.findBestUserID()
+    selected_ids=userBased.recommendByID(userId, users_df,10)
+    print(animes_df.loc[animes_df['anime_id'].isin(selected_ids)]['name'])
+
+
+    
+    
+    
+
