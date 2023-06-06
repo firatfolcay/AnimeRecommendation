@@ -9,7 +9,6 @@ import pandas as pd
 import random
 import numpy as np
 from scipy.spatial.distance import cdist
-
 #Anime Encoder for Genre Based
 class GenreBased:
     def __init__(self):
@@ -59,6 +58,15 @@ class GenreBased:
         # closest_points = npOneHotMatrix[closest_point_indices]
         return closest_point_indices
 
+    
+    def calculate_combined_deterministic(dataframe_df, closestpoints, topX, ws=0.7, wp=0.3):
+        score = dataframe_df.loc[closestpoints, 'rating']
+        popularity = dataframe_df.loc[closestpoints, 'members']
+        combined_value = (score / 10 * ws) + (np.log(np.log(popularity.iloc[0])) * wp)
+        chosen_element = combined_value.nlargest(topX).index.tolist()
+        return chosen_element
+
+        
     
 #Anime encoder for User Based
 class UserBased:
@@ -112,7 +120,18 @@ class UserBased:
     
         return selected_ids
     
-
+    
+    def recommendByIDDeter(self, userId, user_df, count=5):
+        AnimeDict = {}
+        for _, user in user_df.iterrows():
+            if user['user_id'] == userId:
+                if user['rating'] == -1:
+                    user['rating'] = 5
+                AnimeDict[user['anime_id']] = user['rating']
+    
+        selected_ids= dict(list(sorted(AnimeDict).items())[0:count]) 
+        return selected_ids
+    
 
 
 if __name__ == "__main__":
