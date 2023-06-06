@@ -8,8 +8,8 @@ Created on Mon May 29 20:48:08 2023
 import pandas as pd
 import numpy as np
 import AnimeEncode
-import StocasticReturns
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 #test_users_df = dataframe of selected test users
 #user = user id of selected test user
@@ -27,7 +27,17 @@ def selectAnimeList(user, test_users_df):
     predicted_anime = len(user_anime_watched)-half_num_anime
     return selected_anime.tolist(), predicted_anime, user_anime_watched.tolist()
         
+def calculate_combined_deterministic(dataframe_df, closestpoints, topX, ws=0.7, wp=0.3):
+    score = dataframe_df.loc[closestpoints, 'rating']
+    popularity = dataframe_df.loc[closestpoints, 'members']
+    combined_value = (score / 10 * ws) + (np.log(np.log(popularity.iloc[0])) * wp)
+    chosen_element = combined_value.nlargest(topX).index.tolist()
+    return chosen_element
 
+def calculate_score_only(dataframe_df, closestpoints, topX, ws=0.7, wp=0.3):
+    score = dataframe_df.loc[closestpoints, 'rating']
+    chosen_element = score.nlargest(topX).index.tolist()
+    return chosen_element
 
 if __name__ == "__main__":
     pd.set_option('display.max_columns', None)
@@ -104,7 +114,9 @@ if __name__ == "__main__":
         animeList, predict_count, user_anime_watched = selectAnimeList(user,test_users_df)
         animeListIndices = animes_df.index[animes_df["anime_id"].isin(animeList)].tolist()
         
-        predicted_animes_indices = genreEncoder.calcGenreBased([animeListIndices], npOneHot, predict_count)
+        closest_points = genreEncoder.calcGenreBased([animeListIndices], npOneHot, 50)
+        
+        predicted_animes_indices = calculate_score_only(animes_df, closest_points, 10)
         
         predicted_animes = animes_df.loc[predicted_animes_indices, 'anime_id'].tolist()
         
@@ -120,6 +132,21 @@ if __name__ == "__main__":
 
         userScoresbyGenreBased[user] = percentage_correct        
         
+    
+    plt.scatter(range(len(userScoresbyGenreBased)),list(userScoresbyGenreBased.values()), alpha=0.5)
+    
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Scatter Plot with Low Alpha')
+    
+    # Show the plot
+    plt.show()
+    
+    count_zeros = sum(1 for value in userScoresbyGenreBased.values() if value == 0.0)
+    print("Number of 0.0s:", count_zeros)
+    
+    count_hundered = sum(1 for value in userScoresbyGenreBased.values() if value == 100.0)
+    print("Number of 100.0s:", count_hundered)
     
     
     
