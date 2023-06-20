@@ -9,7 +9,6 @@ import pandas as pd
 import random
 import numpy as np
 from scipy.spatial.distance import cdist
-
 #Anime Encoder for Genre Based
 class GenreBased:
     def __init__(self):
@@ -60,6 +59,15 @@ class GenreBased:
         return closest_point_indices
 
     
+    def calculate_combined_deterministic(dataframe_df, closestpoints, topX, ws=0.7, wp=0.3):
+        score = dataframe_df.loc[closestpoints, 'rating']
+        popularity = dataframe_df.loc[closestpoints, 'members']
+        combined_value = (score / 10 * ws) + (np.log(np.log(popularity.iloc[0])) * wp)
+        chosen_element = combined_value.nlargest(topX).index.tolist()
+        return chosen_element
+
+        
+""" 
 #Anime encoder for User Based
 class UserBased:
     def __init__(self):
@@ -112,8 +120,58 @@ class UserBased:
     
         return selected_ids
     
+    
+    def recommendByIDDeter(self, userId, user_df, count=5):
+        AnimeDict = {}
+        for _, user in user_df.iterrows():
+            if user['user_id'] == userId:
+                if user['rating'] == -1:
+                    user['rating'] = 5
+                AnimeDict[user['anime_id']] = user['rating']
+    
+        selected_ids= dict(list(sorted(AnimeDict).items())[0:count]) 
+        return selected_ids
+    
+"""
 
-
+class UserBased:
+    def __init__(self):
+        self.userList = []
+        self.userIndex = []
+    
+    def getUserArray(self, user_df):
+        self.userList = user_df['user_id'].unique()
+        return self.userList
+    
+    def getUserIndex(self, user_df, animeList):
+        self.userIndex = [0] * (len(self.userList) + 2)
+        anime_ratings = user_df[user_df['anime_id'].isin(animeList)]
+        
+        for _, row in anime_ratings.iterrows():
+            if row['rating'] == -1:
+                self.userIndex[row['user_id']] += 5
+            else:
+                self.userIndex[row['user_id']] += row['rating']
+        
+        return self.userIndex
+    
+    def findBestUserID(self):
+        bestUserID = self.userIndex.index(max(self.userIndex))
+        return bestUserID
+    
+    def recommendByID(self, userId, user_df, count=5):
+        anime_ratings = user_df[user_df['user_id'] == userId]
+        anime_ratings = anime_ratings[anime_ratings['rating'] != -1]
+        
+        selected_ids = anime_ratings.sample(n=count, replace=True)['anime_id'].tolist()
+        return selected_ids
+    
+    def recommendByIDDeter(self, userId, user_df, count=5):
+        anime_ratings = user_df[user_df['user_id'] == userId]
+        anime_ratings = anime_ratings[anime_ratings['rating'] != -1]
+        
+        selected_ids = anime_ratings.sort_values('anime_id').head(count)['anime_id'].tolist()
+        return selected_ids
 
 if __name__ == "__main__":
     animes_df = pd.read_csv("anime.csv")
@@ -125,7 +183,7 @@ if __name__ == "__main__":
     c=userBased.getUserArray(users_df)
     d=userBased.getUserIndex(users_df, animeListIndexes)
     userId=userBased.findBestUserID()
-    selected_ids=userBased.recommendByID(userId, users_df,10)
+    selected_ids=userBased.recommendByIDDeter(userId, users_df,10)
     print(animes_df.loc[animes_df['anime_id'].isin(selected_ids)]['name'])
 
 

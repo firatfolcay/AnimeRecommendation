@@ -41,7 +41,7 @@ if __name__ == "__main__":
     animes_df = pd.read_csv("anime.csv")
     users_df = pd.read_csv("rating.csv")
     
-    animeList=['Pumpkin Scissors','Ginga Eiyuu Densetsu','Shakugan no Shana','So Ra No Wo To','Gosick','Kingdom','Arslan Senki','Grisaia no Rakuen', 'Youjo Senki']
+    animeList=['Mirai Nikki (TV)','Kuzu no Honkai','Highschool of the Dead','Ano Hi Mita Hana no Namae wo Bokutachi wa Mada Shiranai.','Angel Beats!','Boku wa Tomodachi ga Sukunai']
     animeListIndexes=list(animes_df.loc[animes_df['name'].isin(animeList)]['anime_id'])
 
     encoder = AnimeEncode.UserBased()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     userIndex = encoder.getUserIndex(users_df, animeListIndexes)   
     
     userId = encoder.findBestUserID()
-    selected_ids = encoder.recommendByID(userId, users_df,10)
+    selected_ids = encoder.recommendByID(userId, users_df,20)
     print(animes_df.loc[animes_df['anime_id'].isin(selected_ids)]['name'])
     
     

@@ -31,6 +31,8 @@ def calculate_combined_stochastic(dataframe, closestpoints, ws, wp):
     return chosen_element
 
 
+
+
 # This function performs a stochastic selection based on calculated values and returns unique chosen elements.
 # Inputs:
 # - list_of_chosen: list of indices to choose from
